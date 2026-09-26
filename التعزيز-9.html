@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#8bd3ff">
+<title>التعزيز</title>
+<style>
+*{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;background:linear-gradient(135deg,#fff7cf,#e5f7ff 50%,#f7e6ff);color:#25324a}
+button,input,textarea{font:inherit} button{cursor:pointer;border:0}
+header{padding:18px 16px 12px;text-align:center}
+.hero{max-width:1050px;margin:auto;background:white;border-radius:28px;padding:16px;box-shadow:0 8px 30px #6c7a891f}
+.kids{font-size:52px;line-height:1}.title{font-size:30px;font-weight:900;margin:4px 0}.sub{color:#667085}
+.wrap{max-width:1050px;margin:auto;padding:0 12px 30px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.btn{padding:11px 15px;border-radius:14px;background:#fff;box-shadow:0 3px 12px #00000012;font-weight:800}
+.primary{background:#55b7ff;color:white}.green{background:#57c785;color:white}.pink{background:#ff8fc7;color:white}.orange{background:#ffad5c;color:white}
+.panel{background:#ffffffd9;border-radius:22px;padding:15px;margin:12px 0;box-shadow:0 5px 20px #00000010}
+label{font-weight:800;display:block;margin-bottom:6px}.row{display:flex;gap:10px;flex-wrap:wrap}.grow{flex:1;min-width:220px}
+input,textarea{width:100%;border:2px solid #e7eaf0;border-radius:13px;padding:10px;background:white;outline:none}textarea{min-height:110px;resize:vertical}
+.classbar{display:flex;gap:8px;overflow:auto;padding:4px 0 10px}.classchip{white-space:nowrap;padding:10px 15px;border-radius:999px;background:white;font-weight:800}.classchip.active{background:#55b7ff;color:white}
+.student{background:white;border-radius:20px;padding:12px;margin:10px 0;box-shadow:0 3px 14px #0000000d}
+.studenttop{display:flex;align-items:center;gap:8px}.name{font-size:19px;font-weight:900;flex:1}.total{background:#eef8ff;padding:6px 10px;border-radius:12px;font-weight:900}
+.actions{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-top:10px}.action{padding:9px 5px;border-radius:14px;background:#f7f8fa;font-weight:900}.actionrow{display:flex;align-items:center;justify-content:center;gap:5px}.minus{width:34px;height:34px;border-radius:10px;background:#e8eef5;color:#526070;font-size:20px;font-weight:900}.plus{width:34px;height:34px;border-radius:10px;background:#27b765;color:white;font-size:20px;font-weight:900}.action small{display:block;font-size:12px;margin-top:2px}.star{color:#238b45}.heart{color:#e94d86}.happy{color:#d59b00}.sad{color:#e88720}.x{color:#d9534f}
+.counts{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}.pill{padding:5px 9px;border-radius:999px;background:#f4f6f8;font-size:13px;font-weight:800}
+.danger{background:#ffe9e9;color:#b42318}.muted{font-size:13px;color:#667085}.empty{text-align:center;padding:35px;color:#667085}
+.modal{position:fixed;inset:0;background:#0006;display:none;align-items:center;justify-content:center;padding:16px;z-index:5}.modal.open{display:flex}.box{background:white;border-radius:24px;padding:20px;max-width:560px;width:100%;max-height:90vh;overflow:auto}.close{float:left;background:#f1f3f5;border-radius:50%;width:34px;height:34px}
+.behavior{border:1px solid #eee;border-radius:14px;padding:10px;margin:8px 0}
+@media(max-width:600px){.actions{grid-template-columns:repeat(3,1fr)}.title{font-size:25px}}
+</style>
+</head>
+<body>
+<header><div class="hero"><div class="kids">👧🏻 ⭐ 👦🏻</div><div class="title">🌈 التعزيز</div><div class="sub">لوحات فصولك — نجوم، قلوب، وجوه، ونقاط في مكان واحد</div></div></header>
+<div class="wrap">
+<div class="toolbar">
+<button class="btn primary" onclick="newClass()">＋ فصل جديد</button>
+<button class="btn green" onclick="addStudents()">＋ إضافة أسماء</button>
+<button class="btn orange" onclick="settings()">⚙️ تخصيص الرموز</button>
+<button class="btn" onclick="exportData()">💾 حفظ نسخة</button>
+</div>
+<div id="classes" class="classbar"></div>
+<div class="panel">
+<div class="row"><div class="grow"><label>اسم الفصل</label><input id="className" onchange="renameClass(this.value)"></div></div>
+</div>
+<div id="students"></div>
+</div>
+
+<div id="modal" class="modal"><div class="box"><button class="close" onclick="closeModal()">×</button><div id="modalContent"></div></div></div>
+
+<script>
+const KEY="ta3zeez_v1";
+let data=JSON.parse(localStorage.getItem(KEY)||"null")||{classes:[],current:null,behaviors:{
+star:"إنجاز أو مشاركة مميزة",heart:"سلوك إيجابي",happy:"ابتسامة وتعاون",sad:"تنبيه لطيف عند الحاجة",x:"سلوك يحتاج متابعة"}};
+if(!data.classes.length){const id=crypto.randomUUID();data.classes=[{id,name:"الفصل الأول",students:[]}];data.current=id}
+if(!data.current||!data.classes.some(c=>c.id===data.current))data.current=data.classes[0].id;
+save();render();
+
+function save(){localStorage.setItem(KEY,JSON.stringify(data))}
+function cur(){return data.classes.find(c=>c.id===data.current)}
+function render(){
+ document.getElementById("classes").innerHTML=data.classes.map(c=>`<button class="classchip ${c.id===data.current?"active":""}" onclick="selectClass('${c.id}')">${esc(c.name)}</button>`).join("");
+ document.getElementById("className").value=cur().name;
+ const box=document.getElementById("students");
+ if(!cur().students.length){box.innerHTML='<div class="panel empty">لا يوجد طلاب بعد 🌟<br>اضغطي «إضافة أسماء» والصقي الأسماء، اسم في كل سطر.</div>';return}
+ box.innerHTML=cur().students.map((s,i)=>studentHTML(s,i)).join("");
+}
+function studentHTML(s,i){
+ const total=s.points+s.star+s.heart+s.happy-s.sad-s.x;
+ return `<div class="student"><div class="studenttop"><div class="name">${esc(s.name)}</div><div class="total">النقاط: ${total}</div><button class="btn danger" style="padding:7px 10px" onclick="removeStudent(${i})">حذف</button></div>
+ <div class="actions">
+ <div class="actionrow"><button class="minus" onclick="dec(${i},'star')" aria-label="حذف نجمة">−</button><button class="action star" onclick="inc(${i},'star')">⭐<small>${s.star}</small></button><button class="plus" onclick="inc(${i},'star')" aria-label="إضافة نجمة">+</button></div>
+ <div class="actionrow"><button class="minus" onclick="dec(${i},'heart')" aria-label="حذف قلب">−</button><button class="action heart" onclick="inc(${i},'heart')">❤️<small>${s.heart}</small></button><button class="plus" onclick="inc(${i},'heart')" aria-label="إضافة قلب">+</button></div>
+ <div class="actionrow"><button class="minus" onclick="dec(${i},'happy')" aria-label="حذف ابتسامة">−</button><button class="action happy" onclick="inc(${i},'happy')">😊<small>${s.happy}</small></button><button class="plus" onclick="inc(${i},'happy')" aria-label="إضافة ابتسامة">+</button></div>
+ <div class="actionrow"><button class="minus" onclick="dec(${i},'sad')" aria-label="حذف وجه زعلان">−</button><button class="action sad" onclick="inc(${i},'sad')">😟<small>${s.sad}</small></button><button class="plus" onclick="inc(${i},'sad')" aria-label="إضافة وجه زعلان">+</button></div>
+ <div class="actionrow"><button class="minus" onclick="dec(${i},'x')" aria-label="حذف إكس">−</button><button class="action x" onclick="inc(${i},'x')">❌<small>${s.x}</small></button><button class="plus" onclick="inc(${i},'x')" aria-label="إضافة إكس">+</button></div>
+ </div>
+ <div class="counts"><span class="pill">⭐ ${s.star}</span><span class="pill">❤️ ${s.heart}</span><span class="pill">😊 ${s.happy}</span><span class="pill">😟 ${s.sad}</span><span class="pill">❌ ${s.x}</span><span class="pill">🔢 نقاط إضافية ${s.points}</span>
+ <button class="pill" onclick="inc(${i},'points')">＋ نقطة</button></div></div>`
+}
+function inc(i,k){let s=cur().students[i];s[k]++;save();render()}
+function dec(i,k){let s=cur().students[i];if(s[k]>0){s[k]--;save();render()}}
+function selectClass(id){data.current=id;save();render()}
+function newClass(){const name=prompt("اسم الفصل الجديد:","فصل جديد");if(!name)return;const id=crypto.randomUUID();data.classes.push({id,name:name.trim(),students:[]});data.current=id;save();render()}
+function renameClass(v){if(v.trim()){cur().name=v.trim();save();render()}}
+function addStudents(){open(`<h2>إضافة أسماء الطلاب</h2><p class="muted">الصقي الأسماء دفعة واحدة — كل اسم في سطر مستقل.</p><textarea id="names" placeholder="سارة\nنورة\nريم"></textarea><div class="toolbar"><button class="btn primary" onclick="doAdd()">إضافة</button><button class="btn" onclick="closeModal()">إلغاء</button></div>`)}
+function doAdd(){const lines=document.getElementById("names").value.split(/\n/).map(x=>x.trim()).filter(Boolean);lines.forEach(name=>cur().students.push({name,points:0,star:0,heart:0,happy:0,sad:0,x:0}));save();closeModal();render()}
+function removeStudent(i){if(confirm("حذف الطالب/ـة من هذه اللوحة؟")){cur().students.splice(i,1);save();render()}}
+function settings(){open(`<h2>تخصيص سلوك الرموز</h2>${["star","heart","happy","sad","x"].map(k=>`<div class="behavior"><b>${icon(k)} ${label(k)}</b><input id="b_${k}" value="${esc(data.behaviors[k])}"></div>`).join("")}<button class="btn primary" onclick="saveSettings()">حفظ</button>`)}
+function saveSettings(){["star","heart","happy","sad","x"].forEach(k=>data.behaviors[k]=document.getElementById("b_"+k).value);save();closeModal();alert("تم حفظ تخصيص الرموز");}
+function exportData(){const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="التعزيز-نسخة-احتياطية.json";a.click();URL.revokeObjectURL(a.href)}
+function open(c){document.getElementById("modalContent").innerHTML=c;document.getElementById("modal").classList.add("open")}
+function closeModal(){document.getElementById("modal").classList.remove("open")}
+function icon(k){return {star:"⭐",heart:"❤️",happy:"😊",sad:"😟",x:"❌"}[k]}
+function label(k){return {star:"النجمة",heart:"القلب",happy:"الوجه المبتسم",sad:"الوجه الزعلان",x:"الإكس"}[k]}
+function esc(x){return String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+</script>
+</body>
+</html>
